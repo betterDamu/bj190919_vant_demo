@@ -52,7 +52,6 @@
         computed: {
             //chosenContactId : null
             cardType() {
-                console.log(this.chosenContactId !== null,"cardType")
                 return this.chosenContactId !== null ? 'edit' : 'add';
             },
 
@@ -135,27 +134,12 @@
                     }
                 })
 
-                //删除之后要更新界面!!  如果光删除 不改list 界面是得不到更新的
+
+                if (this.chosenContactId === info.id)
+                    this.chosenContactId = null;
+
                 if(body.data.code === OK)
-                    //这段代码只有在选中的联系人被删除时 才会得到执行!!!
-                    //确保!!!chosenContactId先变 然后 list再变!!!
-                    if (this.chosenContactId === info.id) {
-                        this.chosenContactId = null;
-                    }
                     await this.updateList() // 这是一个异步的更新  更新list
-
-                    /*
-                        当有await的时候 是list先更新 chosenContactId后更新!!!
-                            list在更新(list变成空[]) currentContact这个计算属性会执行!
-                                此时chosenContactId还存在  可以list已经为空了
-
-                         当没有await的时候 是chosenContactId先更新 list后更新
-                            chosenContactId先更新  currentContact这个计算属性会执行!
-                                此时chosenContactId为null
-                     */
-
-
-
             },
 
             validator(){
