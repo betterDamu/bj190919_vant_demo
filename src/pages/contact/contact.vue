@@ -50,10 +50,15 @@
             };
         },
         computed: {
+            //chosenContactId : null
             cardType() {
+                console.log(this.chosenContactId !== null,"cardType")
                 return this.chosenContactId !== null ? 'edit' : 'add';
             },
 
+            //在删除时 这个计算属性会被调用两次
+            // updatelist的时候 被调用一次 因为在updatelist的时候 list数据得到了更新
+            // chosenContactId被修改的时候;
             currentContact() {
                 const id = this.chosenContactId;
                 return id !== null ? this.list.filter(item => item.id === id)[0] : {};
@@ -76,13 +81,21 @@
                 this.showList = false; // 关闭列表页
             },
 
-            async onSave(info) {
+            // 1. await 需要等待一个promise  等这个promise状态确定了之后 再去执行 await下面的代码
+            // 2. await 必须出现在一个async函数之中
+            // 3. async 函数返回的也是一个promise
+            async onSave({name,tel,id}) {
                 this.showEdit = false; // 关闭编辑页
                 this.showList = false; // 关闭列表页
 
                 let body="";
                 if (this.isEdit) {
-                    this.list = this.list.map(item => item.id === info.id ? info : item);
+                    //this.list = this.list.map(item => item.id === info.id ? info : item);
+                    body = await axios({
+                        url:"http://localhost:9000/api/contact/edit",
+                        method:"put",
+                        data:{name, tel, id}
+                    })
                 } else {
                     //this.list.push(info);
                     //我们在这边同步了数据库  可以忘记操作list了!!!!!!!
@@ -96,8 +109,8 @@
                     })*/
 
                     let formData = new FormData();
-                    formData.append('name', info.name);
-                    formData.append('tel', info.tel);
+                    formData.append('name', name);
+                    formData.append('tel', tel);
                     body = await axios({
                         url:"http://localhost:9000/api/contact/new/form",
                         method:"post",
@@ -105,17 +118,44 @@
                     })
                 }
                 //这个await 很关键!!!!!  保留疑问!!大多数还是不明白为什么要加await
+                //这个await 一定会等待updateList完全执行成功
                 await this.updateList(); //这是一次异步的更新!!!!
-                this.chosenContactId = body.data.data.id;
+                this.chosenContactId = body.data.data.id; // 当前这一行代码 必须要在updateList之后执行
             },
 
-            onDelete(info) {
+            async onDelete(info) {
                 this.showEdit = false; //将编辑页关闭 列表页没有关闭
 
-                this.list = this.list.filter(item => item.id !== info.id);
-                if (this.chosenContactId === info.id) {
-                    this.chosenContactId = null;
-                }
+                // this.list = this.list.filter(item => item.id !== info.id);
+                let body = await axios({
+                    url:"http://localhost:9000/api/contact",
+                    method:"delete",
+                    params:{
+                        id:info.id
+                    }
+                })
+
+                //删除之后要更新界面!!  如果光删除 不改list 界面是得不到更新的
+                if(body.data.code === OK)
+                    //这段代码只有在选中的联系人被删除时 才会得到执行!!!
+                    //确保!!!chosenContactId先变 然后 list再变!!!
+                    if (this.chosenContactId === info.id) {
+                        this.chosenContactId = null;
+                    }
+                    await this.updateList() // 这是一个异步的更新  更新list
+
+                    /*
+                        当有await的时候 是list先更新 chosenContactId后更新!!!
+                            list在更新(list变成空[]) currentContact这个计算属性会执行!
+                                此时chosenContactId还存在  可以list已经为空了
+
+                         当没有await的时候 是chosenContactId先更新 list后更新
+                            chosenContactId先更新  currentContact这个计算属性会执行!
+                                此时chosenContactId为null
+                     */
+
+
+
             },
 
             validator(){
