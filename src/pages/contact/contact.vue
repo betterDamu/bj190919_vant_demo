@@ -86,16 +86,25 @@
                 } else {
                     //this.list.push(info);
                     //我们在这边同步了数据库  可以忘记操作list了!!!!!!!
-                    body = await axios({
+                    /*body = await axios({
                         url:"http://localhost:9000/api/contact/new/json",
                         method:"post",
                         data:{
                             name:info.name,
                             tel:info.tel
                         }
+                    })*/
+
+                    let formData = new FormData();
+                    formData.append('name', info.name);
+                    formData.append('tel', info.tel);
+                    body = await axios({
+                        url:"http://localhost:9000/api/contact/new/form",
+                        method:"post",
+                        data:formData
                     })
                 }
-                //这个await 很关键!!!!!
+                //这个await 很关键!!!!!  保留疑问!!大多数还是不明白为什么要加await
                 await this.updateList(); //这是一次异步的更新!!!!
                 this.chosenContactId = body.data.data.id;
             },
