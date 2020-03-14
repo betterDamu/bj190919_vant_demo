@@ -1,25 +1,31 @@
-// 统一函数 负责接受api 和 axios 来生成所有模块的请求方法
-
-/*当前函数的需求:
-    1. 抹平传参的差异;不管最终在请求的使用什么样的格式发送请求;
-    我们在api调用的时候;只需要传入一个对象
-*/
-
 export default (axios,api)=>{
     const httpUtil = {};
-
     for(let name in api){
-        const {url,method,isForm} =api[name];
-        //当前这些async函数 是我们最终要去发请求用的函数
-        //data:就是外部在发请求时 传入的对象
-        //我们希望外部传入的data 是统一的!!!  {}
-        //可是不一样的请求 最终携带的数据的格式是不一样的
-        //有可能是json 有可能是formdata
+        const {url,method,isForm,hooksForReq} =api[name];
+        //当hooks为undefined的时候; 我们是不能解构赋值的
+        //不能const 因为const是一个块级作用域
+        if(hooksForReq){
+            //api[name] 是一个闭包
+            // 变量 和 属性在使用时的区别
+            api[name].beforeReq = hooksForReq.beforeReq;
+            api[name].AfterReq = hooksForReq.AfterReq;
+        }
+
+        //遇到模块级别钩子时;我们不为其做http函数的绑定
+        if(api[name] instanceof Function){
+            /*break   : 跳出整个循环
+            continue : 跳出当次循环*/
+            continue
+        }
+
         httpUtil[name] = async (data={})=>{
-            //准备请求的数据  而且要抹平这些数据的差异
+            //所有的异常让看门狗咬住
+            if(!(data instanceof Object)) //如果传入的数据不是对象 则报错
+                throw new Error("请求数据必须是一个对象")
+
+            //主体逻辑
             let transformData = null;
-            let flag = data instanceof Object;
-            if(data && flag && isForm){
+            if(isForm){
                 transformData = new FormData();
                 for(let key in data){
                     transformData.append(key,data[key])
@@ -29,24 +35,27 @@ export default (axios,api)=>{
             }
 
 
-            //发送请求
             let body = "";
             switch (method){
                 case "get":
                 case "delete":
+                    api[name].beforeReq && api[name].beforeReq()
                     body = await axios({
                         url,
                         method,
                         params:transformData
                     })
+                    api[name].AfterReq && api[name].AfterReq()
                     break;
                 case "put":
                 case "post":
+                    api[name].beforeReq && api[name].beforeReq()
                     body = await axios({
                         url,
                         method,
                         data:transformData
                     })
+                    api[name].AfterReq && api[name].AfterReq()
                     break;
             }
 
@@ -54,16 +63,5 @@ export default (axios,api)=>{
         }
     }
 
-
     return httpUtil;
-    /*
-    httpUtil:
-        {
-            getContactList:async()=>{},
-            delContact:async()=>{},
-            updateContact:async()=>{},
-            addContactByJson:async()=>{},
-            addContactByForm:async()=>{},
-        }
-    */
 }
