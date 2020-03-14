@@ -1,21 +1,22 @@
-export default (axios,api)=>{
+export default (axios,config={})=>{
+    if(!config.api)
+        throw new Error("api配置必须存在")
+    if(!config.api instanceof Object)
+        throw new Error("api必须得是一个对象")
+
+    //确保config.api存在 而且 是个对象
     const httpUtil = {};
+    const api = config.api;
+
     for(let name in api){
-        const {url,method,isForm,hooksForReq} =api[name];
+        const {url,method,isForm,hooks} =api[name];
         //当hooks为undefined的时候; 我们是不能解构赋值的
         //不能const 因为const是一个块级作用域
-        if(hooksForReq){
+        if(hooks){
             //api[name] 是一个闭包
             // 变量 和 属性在使用时的区别
-            api[name].beforeReq = hooksForReq.beforeReq;
-            api[name].AfterReq = hooksForReq.AfterReq;
-        }
-
-        //遇到模块级别钩子时;我们不为其做http函数的绑定
-        if(api[name] instanceof Function){
-            /*break   : 跳出整个循环
-            continue : 跳出当次循环*/
-            continue
+            api[name].beforeReq = hooks.beforeReq;
+            api[name].AfterReq = hooks.AfterReq;
         }
 
         httpUtil[name] = async (data={})=>{

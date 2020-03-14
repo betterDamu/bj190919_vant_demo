@@ -92,10 +92,10 @@
                     body = await this.$http.contact.updateContact({name, tel, id})
                 } else {
                     body = await this.$http.contact.addContactByJson({name,tel})
-                    body = await this.$http.contact.addContactByForm({name,tel})
+                    // body = await this.$http.contact.addContactByForm({name,tel})
                 }
                 await this.updateList(); //这是一次异步的更新!!!!
-                this.chosenContactId = body.data.data.id; // 当前这一行代码 必须要在updateList之后执行
+                this.chosenContactId = body.data.id; // 当前这一行代码 必须要在updateList之后执行
             },
 
             async onDelete(info) {
@@ -105,7 +105,7 @@
                 if (this.chosenContactId === info.id)
                     this.chosenContactId = null;
 
-                if(body.data.code === OK)
+                if(body.code === OK)
                     await this.updateList()
             },
 
@@ -115,8 +115,8 @@
 
             async updateList(){
                 const body = await this.$http.contact.getContactList()
-                if(body.data.code === OK)
-                    this.list = body.data.data
+                if(body.code === OK)
+                    this.list = body.data
             },
 
         },

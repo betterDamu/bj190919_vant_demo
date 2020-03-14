@@ -9,10 +9,18 @@ export function loading() {
 
 export function success() {
     Toast.clear()
-    Toast.success('success');
+    Toast.success({
+        message: 'success',
+        forbidClick: true,
+        duration:500
+    });
 }
 
 export function fail() {
     Toast.clear()
-    Toast.fail('fail');
+    Toast.fail({
+        message: 'fail',
+        forbidClick: true,
+        duration:500
+    });
 }

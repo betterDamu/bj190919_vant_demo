@@ -1,25 +1,27 @@
 import axios from "axios";
+import config from "./config"
 import {loading,success,fail} from "@/util/toast"
-import api from "./api"
+
+
 const contact = axios.create({
     baseURL:"http://localhost:9000/api",
     timeout:15000
 })
 
 
-contact.interceptors.request.use(function (config) {
+contact.interceptors.request.use(function (axiosConfig) {
     loading();
-    api.beforeReq && api.beforeReq()
-    return config;
+    config.hooks && config.hooks.beforeReq && config.hooks.beforeReq();
+    return axiosConfig;
 });
 
 contact.interceptors.response.use(function (response) {
     success();
-    api.AfterReq && api.AfterReq()
-    return response;
+    config.hooks && config.hooks.AfterReq && config.hooks.AfterReq();
+    return response.data;
 }, function (error) {
     fail();
-    api.AfterReq && api.AfterReq()
+    config.hooks && config.hooks.AfterReq && config.hooks.AfterReq();
     return Promise.reject(error);
 });
 
