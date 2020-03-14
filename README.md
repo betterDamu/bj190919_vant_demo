@@ -1,24 +1,8 @@
-# vant_demo
+### day01
+    vant的基本使用
+    vant的业务组件(联系人组件)
+    数组的api复习
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### day02
+    将联系人练习中数据做活(axios请求)
+    promise;async;await的复习
