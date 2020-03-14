@@ -2,6 +2,11 @@
 export default (axios,api)=>{
 
     return {
-
+        getContactList:()=>{},
+        getContactList:()=>{},
+        getContactList:()=>{},
+        getContactList:()=>{},
+        getContactList:()=>{},
+        getContactList:()=>{}
     }
 }
